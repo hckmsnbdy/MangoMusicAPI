@@ -31,7 +31,7 @@ public class AlbumPlayService {
         if (limit > 100) {
             limit = 100;
         }
-        limit = limit - 1;
+
         return albumPlayDao.getUserRecentPlays(userId, limit);
     }
 
