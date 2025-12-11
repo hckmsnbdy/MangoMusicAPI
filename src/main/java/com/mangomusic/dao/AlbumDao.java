@@ -1,6 +1,7 @@
 package com.mangomusic.dao;
 
 import com.mangomusic.model.Album;
+import com.mangomusic.model.AlbumPlayCount;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -217,5 +218,43 @@ public class AlbumDao {
         album.setReleaseYear(results.getInt("release_year"));
         album.setArtistName(results.getString("artist_name"));
         return album;
+    }
+    public AlbumPlayCount getAlbumPlayCount(int albumId) {
+        String query = """
+                SELECT 
+                    a.album_id,
+                    a.title AS album_title,
+                    ar.name AS artist_name,
+                    COUNT(ap.id) AS play_count
+                FROM albums a
+                JOIN artists ar ON a.artist_id = ar.artist_id
+                LEFT JOIN album_plays ap ON a.album_id = ap.album_id
+                WHERE a.album_id = ?
+                GROUP BY a.album_id, a.title, ar.name
+                """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, albumId);
+
+            try (ResultSet rs = statement.executeQuery()) {
+
+                if (rs.next()) {
+                    int id = rs.getInt("album_id");
+                    String title = rs.getString("album_title");
+                    String artistName = rs.getString("artist_name");
+                    long playCount = rs.getLong("play_count");
+
+                    return new AlbumPlayCount(id, title, artistName, playCount);
+                } else {
+                    //
+                    return null;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting album play count for albumId: " + albumId, e);
+        }
     }
 }
