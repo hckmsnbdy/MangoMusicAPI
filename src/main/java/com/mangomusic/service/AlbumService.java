@@ -3,10 +3,13 @@ package com.mangomusic.service;
 import com.mangomusic.dao.AlbumDao;
 import com.mangomusic.dao.ArtistDao;
 import com.mangomusic.model.Album;
+import com.mangomusic.model.AlbumPlayCount;
 import com.mangomusic.model.Artist;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class AlbumService {
@@ -90,5 +93,20 @@ public class AlbumService {
                 throw new IllegalArgumentException("Release year must be between 1900 and 2100");
             }
         }
+    }
+    public Map<String, Object> getAlbumPlayCount(int albumId) {
+        AlbumPlayCount playCountInfo = albumDao.getAlbumPlayCount(albumId);
+
+        if (playCountInfo == null) {
+            return null;
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("albumId", playCountInfo.getAlbumId());
+        result.put("albumTitle", playCountInfo.getAlbumTitle());
+        result.put("artistName", playCountInfo.getArtistName());
+        result.put("playCount", playCountInfo.getPlayCount());
+
+        return result;
     }
 }
