@@ -5,7 +5,9 @@ import com.mangomusic.model.User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -82,4 +84,26 @@ public class UserService {
             throw new IllegalArgumentException("Country is required");
         }
     }
+
+    public Map<String, Object> getFavoriteGenre(int userId) {
+
+        User user = userDao.getUserById(userId);
+        if (user == null) {
+            return null;
+        }
+
+        UserDao.FavoriteGenreResult stats = userDao.getFavoriteGenreStats(userId);
+        if (stats == null) {
+            return null;
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("userId", user.getUserId());
+        result.put("username", user.getUsername());
+        result.put("favoriteGenre", stats.getGenre());
+        result.put("playsInGenre", stats.getPlays());
+
+        return result;
+    }
+
 }
