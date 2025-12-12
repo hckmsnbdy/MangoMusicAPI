@@ -53,6 +53,12 @@ public class AlbumController {
         }
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/recent")
+    public ResponseEntity<List<Album>> getRecentAlbums(
+            @RequestParam(defaultValue = "10") int limit) {
+
+        return ResponseEntity.ok(albumService.getRecentAlbums(limit));
+    }
 
     @PostMapping
     public ResponseEntity<Album> createAlbum(@RequestBody Album album) {
