@@ -226,4 +226,50 @@ public class UserDao {
         user.setCountry(results.getString("country"));
         return user;
     }
+    public static class FavoriteGenreResult {
+        private final String genre;
+        private final long plays;
+
+        public FavoriteGenreResult(String genre, long plays) {
+            this.genre = genre;
+            this.plays = plays;
+        }
+
+        public String getGenre() { return genre; }
+        public long getPlays() { return plays; }
+    }
+
+    public FavoriteGenreResult getFavoriteGenreStats(int userId) {
+        String query = """
+            SELECT
+                ar.primary_genre AS genre,
+                COUNT(*) AS plays_in_genre
+            FROM album_plays ap
+            JOIN albums al ON ap.album_id = al.album_id
+            JOIN artists ar ON al.artist_id = ar.artist_id
+            WHERE ap.user_id = ?
+            GROUP BY ar.primary_genre
+            ORDER BY plays_in_genre DESC, genre ASC
+            LIMIT 1
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, userId);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    String genre = rs.getString("genre");
+                    long plays = rs.getLong("plays_in_genre");
+                    return new FavoriteGenreResult(genre, plays);
+                }
+                return null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting favorite genre for userId: " + userId, e);
+        }
+    }
+
 }
