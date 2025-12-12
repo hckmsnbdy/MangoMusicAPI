@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -47,6 +48,18 @@ public class UserController {
         }
         return ResponseEntity.ok(user);
     }
+    @GetMapping("/{id}/favorite-genre")
+    public ResponseEntity<?> getFavoriteGenre(@PathVariable int id) {
+
+        Map<String, Object> result = userService.getFavoriteGenre(id);
+
+        if (result == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
