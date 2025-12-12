@@ -7,6 +7,7 @@ import com.mangomusic.model.AlbumPlayCount;
 import com.mangomusic.model.Artist;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,22 @@ public class AlbumService {
     public List<Album> getAlbumsByGenre(String genre) {
         return albumDao.getAlbumsByGenre(genre);
     }
+
+    public List<Album> getRecentAlbums(int limit) {
+
+        if (limit <= 0) {
+            limit = 10;
+        }
+        if (limit > 100) {
+            limit = 100;
+        }
+
+        int currentYear = Year.now().getValue();
+        int minYear = currentYear - 2;
+
+        return albumDao.getRecentAlbums(minYear, limit);
+    }
+
 
     public List<Album> searchAlbums(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
