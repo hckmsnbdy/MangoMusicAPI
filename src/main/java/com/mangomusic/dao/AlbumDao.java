@@ -92,6 +92,37 @@ public class AlbumDao {
 
         return albums;
     }
+    public List<Album> getRecentAlbums(int minYear, int limit) {
+        List<Album> albums = new ArrayList<>();
+
+        String query = """
+            SELECT al.album_id, al.artist_id, al.title, al.release_year, ar.name AS artist_name
+            FROM albums al
+            JOIN artists ar ON al.artist_id = ar.artist_id
+            WHERE al.release_year >= ?
+            ORDER BY al.release_year DESC, al.title ASC
+            LIMIT ?
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, minYear);
+            statement.setInt(2, limit);
+
+            try (ResultSet results = statement.executeQuery()) {
+                while (results.next()) {
+                    albums.add(mapRowToAlbum(results));
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting recent albums", e);
+        }
+
+        return albums;
+    }
+
     public ArtistTopAlbum getTopAlbumForArtist(int artistId) {
         String query = """
             SELECT
