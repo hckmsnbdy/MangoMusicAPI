@@ -2,6 +2,7 @@ package com.mangomusic.dao;
 
 import com.mangomusic.model.Album;
 import com.mangomusic.model.AlbumPlayCount;
+import com.mangomusic.model.ArtistTopAlbum;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -90,6 +91,47 @@ public class AlbumDao {
         }
 
         return albums;
+    }
+    public ArtistTopAlbum getTopAlbumForArtist(int artistId) {
+        String query = """
+            SELECT
+                al.album_id,
+                al.artist_id,
+                al.title,
+                al.release_year,
+                ar.name AS artist_name,
+                COUNT(ap.id) AS play_count
+            FROM albums al
+            JOIN artists ar ON ar.artist_id = al.artist_id
+            JOIN album_plays ap ON ap.album_id = al.album_id
+            WHERE al.artist_id = ?
+            GROUP BY al.album_id, al.artist_id, al.title, al.release_year, ar.name
+            ORDER BY play_count DESC, al.album_id ASC
+            LIMIT 1
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+
+            statement.setInt(1, artistId);
+
+            try (ResultSet rs = statement.executeQuery()) {
+                if (rs.next()) {
+                    int albumId = rs.getInt("album_id");
+                    int aId = rs.getInt("artist_id");
+                    String title = rs.getString("title");
+                    int releaseYear = rs.getInt("release_year");
+                    String artistName = rs.getString("artist_name");
+                    long playCount = rs.getLong("play_count");
+
+                    return new ArtistTopAlbum(albumId, aId, title, releaseYear, artistName, playCount);
+                }
+                return null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting top album for artistId: " + artistId, e);
+        }
     }
 
     public List<Album> getAlbumsByGenre(String genre) {
