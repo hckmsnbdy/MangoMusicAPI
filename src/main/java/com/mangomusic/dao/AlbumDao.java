@@ -100,7 +100,7 @@ public class AlbumDao {
                 al.title,
                 al.release_year,
                 ar.name AS artist_name,
-                COUNT(ap.id) AS play_count
+                COUNT(*) AS play_count
             FROM albums al
             JOIN artists ar ON ar.artist_id = al.artist_id
             JOIN album_plays ap ON ap.album_id = al.album_id

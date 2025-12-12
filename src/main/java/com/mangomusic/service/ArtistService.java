@@ -1,7 +1,9 @@
 package com.mangomusic.service;
 
+import com.mangomusic.dao.AlbumDao;
 import com.mangomusic.dao.ArtistDao;
 import com.mangomusic.model.Artist;
+import com.mangomusic.model.ArtistTopAlbum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,9 +12,12 @@ import java.util.List;
 public class ArtistService {
 
     private final ArtistDao artistDao;
+    private final AlbumDao albumDao;
 
-    public ArtistService(ArtistDao artistDao) {
+
+    public ArtistService(ArtistDao artistDao, AlbumDao albumDao) {
         this.artistDao = artistDao;
+        this.albumDao = albumDao;
     }
 
     public List<Artist> getAllArtists() {
@@ -57,4 +62,22 @@ public class ArtistService {
             throw new IllegalArgumentException("Primary genre is required");
         }
     }
+    public ArtistTopAlbum getTopAlbumForArtist(int artistId) {
+
+        Artist artist = artistDao.getArtistById(artistId);
+        if (artist == null) {
+            return null;
+        }
+
+        ArtistTopAlbum topAlbum = albumDao.getTopAlbumForArtist(artistId);
+
+
+        if (topAlbum == null) {
+            return null;
+        }
+
+        return topAlbum;
+    }
+
+
 }
